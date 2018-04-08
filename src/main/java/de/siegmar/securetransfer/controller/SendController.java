@@ -77,6 +77,9 @@ public class SendController {
     private final Validator validator;
     private final SecureTransferConfiguration config;
 
+    // TODO
+    private final boolean enableTOTPChallenge = true;
+
     @Autowired
     public SendController(final MessageSenderService messageService,
                           final @Qualifier("mvcValidator") Validator validator,
@@ -92,6 +95,11 @@ public class SendController {
             .addAttribute("message_max_length", EncryptMessageCommand.MESSAGE_MAX_LENGTH)
             .addAttribute("password_max_length", EncryptMessageCommand.PASSWORD_MAX_LENGTH)
             .addAttribute("max_expiration", EncryptMessageCommand.MAX_EXPIRATION);
+
+        if (enableTOTPChallenge) {
+            model
+                .addAttribute("enable_challenge", true);
+        }
     }
 
     /**
