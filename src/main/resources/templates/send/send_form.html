@@ -46,7 +46,7 @@
     	th:object="${command}" enctype="multipart/form-data" autocomplete="off">
     	
     	<!--  TODO hide it -->
-    	<input id="accessToken" type="text" th:field="*{accessToken}"></input>
+    	<input id="accessToken" type="hidden" th:field="*{accessToken}"></input>
     	        
         <div class="panel panel-danger" th:if="${#fields.hasAnyErrors()}">
             <div class="panel-heading">Error processing your request</div>

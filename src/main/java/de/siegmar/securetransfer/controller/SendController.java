@@ -148,7 +148,8 @@ public class SendController {
         encryptMessageCommand.setAccessToken(accessToken);
         return new ModelAndView(FORM_SEND_MSG)
             .addObject("command", encryptMessageCommand)
-            .addObject("challenge", new AuthorizationChallengeCommand());
+            .addObject("challenge", new AuthorizationChallengeCommand())
+            .addObject("enable_challenge", false);
     }
 
     /**
@@ -218,6 +219,9 @@ public class SendController {
     }
 
     private boolean validateAccessToken(final String accessToken) {
+        if (Strings.isNullOrEmpty(accessToken)) {
+            return false;
+        }
 
         try {
             JWT.require(Algorithm.HMAC256(accessTokenSecretKey))
