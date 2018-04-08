@@ -41,6 +41,7 @@ dependencies {
     compile('org.webjars:clipboard.js:1.6.1')
     compile('org.webjars.bower:pwstrength-bootstrap:2.0.3')
     compile('org.webjars.bower:bootstrap-maxlength:1.7.0')
+    compile('org.webjars:jquery-blockui:2.65')
     testCompile('junit:junit:4.12')
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('org.jsoup:jsoup:1.10.2')

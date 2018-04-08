@@ -29,17 +29,24 @@
 
     <p>Securely send your sensitive data.</p>
     
-    <form th:action="@{/send?authorize}" method="post"
-    	th:object="${challenge}" autocomplete="off">
-
-        <div th:if="${enable_challenge}" class="alert alert-info">
-        	Complete the following challenge to continue:
-        	<input type="number" class="form-control" id="challenge-number1" th:field="*{challengeNumber1}" autocomplete="off"></input>
-
-			<button type="submit">Submit challenge</button>        
-        </div>
-            	
-   	</form>
+    
+    <div id="authorizeDialog" th:if="${enable_challenge}" style="display:none">
+	    <form th:action="@{/send?authorize}" method="post"
+	    	th:object="${challenge}" autocomplete="off">
+	
+	        <div class="alert alert-info">
+	        	Complete the following challenge to continue:
+	        	<input type="number" class="form-control" id="challenge-number1" th:field="*{challengeNumber1}" autocomplete="off"></input>
+	
+	
+				<button type="submit" onsubmit="$.unblockUI()">Submit challenge</button>        
+	        </div>
+	            	
+	   	</form>
+    </div>
+    <script th:if="${enable_challenge}">
+    	$.blockUI({ message: $('#authorizeDialog'), css: { width: '275px' } });
+    </script>
 
     <form th:action="@{/send}" method="post"
     
