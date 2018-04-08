@@ -19,9 +19,11 @@ package de.siegmar.securetransfer.controller;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.io.UnsupportedEncodingException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.OptionalInt;
 
@@ -57,6 +59,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.google.common.base.Strings;
 import com.google.common.hash.HashCode;
 
@@ -74,6 +79,7 @@ public class SendController {
 
     private static final String FORM_SEND_MSG = "send/send_form";
     private static final String FORM_MSG_STATUS = "send/message_status";
+    private static final String accessTokenSecretKey = "EoS2phish3Ac7taingaCaine";
 
     private final MessageSenderService messageService;
     private final Validator validator;
@@ -110,7 +116,8 @@ public class SendController {
 
         System.out.println("CHECK -> UNLCOK page");
 
-        final String accessToken = "2121j2ö1kj2öl12.12.1212121";
+        final String accessToken = createAccessToken();
+
 
         return new RedirectView("/send?token="+accessToken);
 //        return new ModelAndView("redirect:"+FORM_SEND_MSG + "?token="+accessToken);
@@ -188,8 +195,30 @@ public class SendController {
     }
 
 
+    private String createAccessToken() {
+        try {
+            return JWT.create()
+                .withExpiresAt(Date.from(Instant.now().plus(15, ChronoUnit.MINUTES)))
+                .sign(Algorithm.HMAC256(accessTokenSecretKey));
+        } catch (IllegalArgumentException | UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     private boolean validateAccessToken(final String accessToken) {
-        return accessToken.startsWith("ok");
+
+        try {
+            JWT.require(Algorithm.HMAC256(accessTokenSecretKey))
+                .acceptExpiresAt(5)
+                .build()
+                .verify(accessToken);
+            return true;
+        } catch(final JWTVerificationException tee) {
+            return false;
+        } catch (IllegalArgumentException | UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
+
     }
 
     private DataBinder initBinder() {
