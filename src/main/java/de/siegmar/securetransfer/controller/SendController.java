@@ -54,12 +54,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.RedirectView;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.google.common.base.Strings;
 import com.google.common.hash.HashCode;
 
 import de.siegmar.securetransfer.config.SecureTransferConfiguration;
+import de.siegmar.securetransfer.controller.dto.AuthorizationChallengeCommand;
 import de.siegmar.securetransfer.controller.dto.EncryptMessageCommand;
 import de.siegmar.securetransfer.domain.KeyIv;
 import de.siegmar.securetransfer.domain.SecretFile;
@@ -102,12 +104,32 @@ public class SendController {
         }
     }
 
+    // see https://stackoverflow.com/questions/25268000/handling-multiple-forms-spring?rq=1
+    @PostMapping(name = "/authorize", params = "authorize")
+    public RedirectView authorize(@ModelAttribute final AuthorizationChallengeCommand command) {
+
+        System.out.println("CHECK -> UNLCOK page");
+
+        final String accessToken = "2121j2ö1kj2öl12.12.1212121";
+
+        return new RedirectView("/send?token="+accessToken);
+//        return new ModelAndView("redirect:"+FORM_SEND_MSG + "?token="+accessToken);
+
+    }
+
     /**
      * Display the send form.
      */
     @GetMapping
-    public ModelAndView form() {
-        return new ModelAndView(FORM_SEND_MSG, "command", new EncryptMessageCommand());
+    public ModelAndView form(@RequestParam(name = "token", required = false) final String accessToken) {
+        System.out.println("GET form");
+        System.out.println("accessToken = " + accessToken);
+        // TODO rework
+        final EncryptMessageCommand encryptMessageCommand = new EncryptMessageCommand();
+        encryptMessageCommand.setAccessToken(accessToken);
+        return new ModelAndView(FORM_SEND_MSG)
+            .addObject("command", encryptMessageCommand)
+            .addObject("challenge", new AuthorizationChallengeCommand());
     }
 
     /**
@@ -141,8 +163,15 @@ public class SendController {
             errors.reject(null, "Neither message nor files submitted");
         }
 
+        // TODO
+        System.out.println("VALIDATE TOKEN " + command.getAccessToken());
+        if (enableTOTPChallenge && !validateAccessToken(command.getAccessToken())) {
+            errors.reject(null, "Invalid access token");
+        }
+
         if (errors.hasErrors()) {
-            return new ModelAndView(FORM_SEND_MSG, binder.getBindingResult().getModel());
+            return new ModelAndView(FORM_SEND_MSG, binder.getBindingResult().getModel())
+                .addObject("challenge", new AuthorizationChallengeCommand());
         }
 
         final String senderId = messageService.storeMessage(command.getMessage(), tmpFiles,
@@ -158,6 +187,10 @@ public class SendController {
             .addObject("linkSecret", linkSecret);
     }
 
+
+    private boolean validateAccessToken(final String accessToken) {
+        return accessToken.startsWith("ok");
+    }
 
     private DataBinder initBinder() {
         final DataBinder binder = new DataBinder(new EncryptMessageCommand(), "command");

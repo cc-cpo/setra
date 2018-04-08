@@ -28,16 +28,25 @@
     </div>
 
     <p>Securely send your sensitive data.</p>
+    
+    <form th:action="@{/send?authorize}" method="post"
+    	th:object="${challenge}" enctype="multipart/form-data" autocomplete="off">
+
+        <div th:if="${enable_challenge}" class="alert alert-info">
+        	Complete the following challenge to continue:
+        	<input type="number" class="form-control" id="challenge-number1" th:field="*{challengeNumber1}" autocomplete="off"></input>
+
+			<button type="submit">Submit challenge</button>        
+        </div>
+            	
+   	</form>
 
     <form th:action="@{/send}" method="post"
     	th:object="${command}" enctype="multipart/form-data" autocomplete="off">
-        
-        
-        <div th:if="${enable_challenge}" class="alert alert-info">
-        	Complete the following challenge to continue:
-        	
-        </div>
-
+    	
+    	<!--  TODO hide it -->
+    	<input id="accessToken" type="text" th:field="*{accessToken}"></input>
+    	        
         <div class="panel panel-danger" th:if="${#fields.hasAnyErrors()}">
             <div class="panel-heading">Error processing your request</div>
             <div class="panel-body" th:if="${#fields.hasGlobalErrors()}">

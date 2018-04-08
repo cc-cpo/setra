@@ -32,6 +32,11 @@ public class EncryptMessageCommand {
     @Size(max = MESSAGE_MAX_LENGTH)
     private String message;
 
+    /**
+     * optional - only required, if authorization is enabled
+     */
+    private String accessToken;
+
     private List<MultipartFile> files;
 
     @Size(max = PASSWORD_MAX_LENGTH)
@@ -39,6 +44,14 @@ public class EncryptMessageCommand {
 
     @Range(min = 1, max = MAX_EXPIRATION)
     private Integer expirationDays = 1;
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(final String accessToken) {
+        this.accessToken = accessToken;
+    }
 
     public String getMessage() {
         return message;
