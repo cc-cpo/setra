@@ -30,7 +30,7 @@
     <p>Securely send your sensitive data.</p>
     
     <form th:action="@{/send?authorize}" method="post"
-    	th:object="${challenge}" enctype="multipart/form-data" autocomplete="off">
+    	th:object="${challenge}" autocomplete="off">
 
         <div th:if="${enable_challenge}" class="alert alert-info">
         	Complete the following challenge to continue:
@@ -42,6 +42,7 @@
    	</form>
 
     <form th:action="@{/send}" method="post"
+    
     	th:object="${command}" enctype="multipart/form-data" autocomplete="off">
     	
     	<!--  TODO hide it -->

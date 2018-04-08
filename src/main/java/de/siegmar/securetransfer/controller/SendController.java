@@ -45,6 +45,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
+import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,7 +57,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.servlet.view.RedirectView;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.auth0.jwt.JWT;
@@ -71,6 +71,7 @@ import de.siegmar.securetransfer.controller.dto.EncryptMessageCommand;
 import de.siegmar.securetransfer.domain.KeyIv;
 import de.siegmar.securetransfer.domain.SecretFile;
 import de.siegmar.securetransfer.domain.SenderMessage;
+import de.siegmar.securetransfer.service.GoogleAuthenticatorOTPService;
 import de.siegmar.securetransfer.service.MessageSenderService;
 
 @Controller
@@ -84,6 +85,7 @@ public class SendController {
     private final MessageSenderService messageService;
     private final Validator validator;
     private final SecureTransferConfiguration config;
+    private final GoogleAuthenticatorOTPService otpService;
 
     // TODO
     private final boolean enableTOTPChallenge = true;
@@ -91,10 +93,12 @@ public class SendController {
     @Autowired
     public SendController(final MessageSenderService messageService,
                           final @Qualifier("mvcValidator") Validator validator,
-                          final SecureTransferConfiguration config) {
+                          final SecureTransferConfiguration config,
+                          final GoogleAuthenticatorOTPService otpService) {
         this.messageService = messageService;
         this.validator = validator;
         this.config = config;
+        this.otpService = otpService;
     }
 
     @ModelAttribute
@@ -112,14 +116,22 @@ public class SendController {
 
     // see https://stackoverflow.com/questions/25268000/handling-multiple-forms-spring?rq=1
     @PostMapping(name = "/authorize", params = "authorize")
-    public RedirectView authorize(@ModelAttribute final AuthorizationChallengeCommand command) {
+    public ModelAndView authorize(@ModelAttribute final AuthorizationChallengeCommand command, final Errors errors) {
 
-        System.out.println("CHECK -> UNLCOK page");
+        System.out.println("CHECK -> code = " + command.getChallengeNumber1());
+
+        final boolean authorized = otpService.checkCode(command.getChallengeNumber1());
+
+        if (!authorized) {
+            System.out.println("verification CODE rejected");
+            errors.reject(null, "Verification CODE not correct");
+            return form(null);
+        }
 
         final String accessToken = createAccessToken();
 
 
-        return new RedirectView("/send?token="+accessToken);
+        return new ModelAndView("redirect:/send?token="+accessToken);
 //        return new ModelAndView("redirect:"+FORM_SEND_MSG + "?token="+accessToken);
 
     }
