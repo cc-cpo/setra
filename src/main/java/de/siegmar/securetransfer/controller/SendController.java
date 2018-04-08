@@ -149,7 +149,7 @@ public class SendController {
         return new ModelAndView(FORM_SEND_MSG)
             .addObject("command", encryptMessageCommand)
             .addObject("challenge", new AuthorizationChallengeCommand())
-            .addObject("enable_challenge", false);
+            .addObject("enable_challenge", accessToken == null);
     }
 
     /**
